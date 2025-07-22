@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频播放器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .player-container {
+            width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .file-info {
+            margin-bottom: 20px;
+        }
+        
+        .filename {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .filesize {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            margin-bottom: 15px;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #4a90e2;
+            border-radius: 2px;
+            width: 0%;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .play-btn {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+        }
+        
+        .speed-btn {
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        
+        .active-speed {
+            background-color: #4a90e2;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="file-info">
+            <div class="filename">H41220.mp3</div>
+            <div class="filesize">23.60MB</div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="time-display">
+                <span id="current-time">00:00</span>
+                <span id="duration">31:11</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="play-btn" id="play-btn">▶</button>
+            <div class="speed-control">
+                <button class="speed-btn" data-speed="0.5">0.5x</button>
+                <button class="speed-btn active-speed" data-speed="1.0">1.0x</button>
+                <button class="speed-btn" data-speed="1.5">1.5x</button>
+                <button class="speed-btn" data-speed="2.0">2.0x</button>
+            </div>
+        </div>
+        
+        <audio id="audio" src="H41220.HTML"></audio>
+    </div>
+
+    <script>
+        const audio = document.getElementById('audio');
+        const playBtn = document.getElementById('play-btn');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const speedBtns = document.querySelectorAll('.speed-btn');
+        
+        // 播放/暂停
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.textContent = '❚❚';
+            } else {
+                audio.pause();
+                playBtn.textContent = '▶';
+            }
+        });
+        
+        // 更新进度条
+        audio.addEventListener('timeupdate', () => {
+            const { currentTime, duration } = audio;
+            const progressPercent = (currentTime / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+            
+            // 格式化时间显示
+            currentTimeEl.textContent = formatTime(currentTime);
+        });
+        
+        // 设置进度条点击跳转
+        const progressBar = document.querySelector('.progress-bar');
+        progressBar.addEventListener('click', (e) => {
+            const width = progressBar.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        });
+        
+        // 音频加载完成后显示总时长
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+        
+        // 倍速控制
+        speedBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                audio.playbackRate = btn.dataset.speed;
+                speedBtns.forEach(btn => btn.classList.remove('active-speed'));
+                btn.classList.add('active-speed');
+            });
+        });
+        
+        // 格式化时间为MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>
